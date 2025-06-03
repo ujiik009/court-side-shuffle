@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Shuffle, Users, Plus, Trash2, Trophy, Heart, Star, MapPin, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ interface Player {
   name: string;
   groupId: string;
   dateAdded: string;
+  isActive: boolean;
 }
 
 interface Group {
@@ -191,7 +191,8 @@ const Index = () => {
       id: Date.now().toString(),
       name: newPlayerName.trim(),
       groupId: selectedGroup,
-      dateAdded: new Date().toISOString()
+      dateAdded: new Date().toISOString(),
+      isActive: true
     };
 
     setPlayers([...players, newPlayer]);
@@ -200,6 +201,20 @@ const Index = () => {
     toast({
       title: "Welcome aboard! 🎉",
       description: `${newPlayer.name} joined the group!`
+    });
+  };
+
+  const togglePlayerActive = (playerId: string) => {
+    setPlayers(players.map(player => 
+      player.id === playerId 
+        ? { ...player, isActive: !player.isActive }
+        : player
+    ));
+    
+    const player = players.find(p => p.id === playerId);
+    toast({
+      title: player?.isActive ? "Player deactivated! 😴" : "Player activated! 🎉",
+      description: `${player?.name} is now ${player?.isActive ? 'inactive' : 'active'}`
     });
   };
 
@@ -270,19 +285,19 @@ const Index = () => {
     }
 
     const requiredPlayers = matchType === 'singles' ? 2 : 4;
-    const groupPlayers = players.filter(p => p.groupId === selectedGroup);
+    const activePlayers = players.filter(p => p.groupId === selectedGroup && p.isActive);
     
-    if (groupPlayers.length < requiredPlayers) {
+    if (activePlayers.length < requiredPlayers) {
       toast({
-        title: "Need more friends! 👥",
-        description: `You need at least ${requiredPlayers} players in this group for ${matchType}`,
+        title: "Need more active friends! 👥",
+        description: `You need at least ${requiredPlayers} active players in this group for ${matchType}`,
         variant: "destructive"
       });
       return;
     }
 
     // Shuffle players array and take required number
-    const shuffledPlayers = [...groupPlayers].sort(() => Math.random() - 0.5);
+    const shuffledPlayers = [...activePlayers].sort(() => Math.random() - 0.5);
     const selectedPlayers = shuffledPlayers.slice(0, requiredPlayers);
 
     const match: Match = {
@@ -317,6 +332,7 @@ const Index = () => {
   };
 
   const currentGroupPlayers = players.filter(p => p.groupId === selectedGroup);
+  const activeGroupPlayers = currentGroupPlayers.filter(p => p.isActive);
   const currentGroup = groups.find(g => g.id === selectedGroup);
   const currentCourt = courts.find(c => c.id === selectedCourt);
 
@@ -533,7 +549,7 @@ const Index = () => {
                     <div className="bg-white/20 p-2 rounded-full">
                       <Users className="w-6 h-6" />
                     </div>
-                    <span className="text-xl">Players ({currentGroupPlayers.length}) 👥</span>
+                    <span className="text-xl">Players ({currentGroupPlayers.length}) - Active ({activeGroupPlayers.length}) 👥</span>
                   </div>
                   {currentGroupPlayers.length > 0 && (
                     <Button
@@ -559,22 +575,57 @@ const Index = () => {
                     {currentGroupPlayers.map((player, index) => (
                       <div
                         key={player.id}
-                        className="flex items-center justify-between p-4 bg-white rounded-2xl hover:bg-green-50 transition-all duration-200 shadow-md transform hover:scale-105 border-2 border-green-200"
+                        className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-200 shadow-md transform hover:scale-105 border-2 ${
+                          player.isActive 
+                            ? 'bg-white hover:bg-green-50 border-green-200' 
+                            : 'bg-gray-100 hover:bg-gray-150 border-gray-300 opacity-70'
+                        }`}
                       >
                         <div className="flex items-center gap-3">
-                          <div className="bg-gradient-to-r from-green-400 to-teal-400 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
+                            player.isActive 
+                              ? 'bg-gradient-to-r from-green-400 to-teal-400 text-white' 
+                              : 'bg-gray-400 text-gray-600'
+                          }`}>
                             {index + 1}
                           </div>
-                          <span className="font-bold text-green-800 text-lg">{player.name}</span>
+                          <div className="flex flex-col">
+                            <span className={`font-bold text-lg ${
+                              player.isActive ? 'text-green-800' : 'text-gray-600'
+                            }`}>
+                              {player.name}
+                            </span>
+                            <span className={`text-xs px-2 py-1 rounded-full w-fit ${
+                              player.isActive 
+                                ? 'bg-green-100 text-green-700' 
+                                : 'bg-gray-200 text-gray-600'
+                            }`}>
+                              {player.isActive ? 'Active ✅' : 'Inactive 😴'}
+                            </span>
+                          </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removePlayer(player.id)}
-                          className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => togglePlayerActive(player.id)}
+                            className={`rounded-full w-10 h-10 p-0 ${
+                              player.isActive 
+                                ? 'text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50' 
+                                : 'text-green-500 hover:text-green-600 hover:bg-green-50'
+                            }`}
+                          >
+                            {player.isActive ? '😴' : '✅'}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removePlayer(player.id)}
+                            className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -601,6 +652,7 @@ const Index = () => {
                     <div className="flex items-center justify-center gap-2 mb-1">
                       <div className={`w-3 h-3 rounded-full ${currentGroup.color}`}></div>
                       <span className="font-bold text-purple-700">{currentGroup.name}</span>
+                      <span className="text-sm text-gray-600">({activeGroupPlayers.length} active)</span>
                     </div>
                     <div className="flex items-center justify-center gap-2">
                       <span className="text-lg">🏸</span>
@@ -610,25 +662,25 @@ const Index = () => {
                 )}
                 <Button
                   onClick={() => generateRandomMatch('singles')}
-                  disabled={currentGroupPlayers.length < 2 || !selectedGroup || !selectedCourt}
+                  disabled={activeGroupPlayers.length < 2 || !selectedGroup || !selectedCourt}
                   className="w-full bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 text-white py-4 text-lg font-bold rounded-2xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
                 >
                   <div className="flex items-center justify-center gap-3">
                     <Shuffle className="w-5 h-5" />
                     <span>Singles Battle ⚔️</span>
                   </div>
-                  <div className="text-sm opacity-90">(2 Players)</div>
+                  <div className="text-sm opacity-90">(2 Active Players)</div>
                 </Button>
                 <Button
                   onClick={() => generateRandomMatch('doubles')}
-                  disabled={currentGroupPlayers.length < 4 || !selectedGroup || !selectedCourt}
+                  disabled={activeGroupPlayers.length < 4 || !selectedGroup || !selectedCourt}
                   className="w-full bg-gradient-to-r from-pink-400 to-red-500 hover:from-pink-500 hover:to-red-600 text-white py-4 text-lg font-bold rounded-2xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
                 >
                   <div className="flex items-center justify-center gap-3">
                     <Shuffle className="w-5 h-5" />
                     <span>Doubles Team Up 🤝</span>
                   </div>
-                  <div className="text-sm opacity-90">(4 Players)</div>
+                  <div className="text-sm opacity-90">(4 Active Players)</div>
                 </Button>
               </CardContent>
             </Card>
