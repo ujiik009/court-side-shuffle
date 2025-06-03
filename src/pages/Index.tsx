@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 
 interface Player {
@@ -336,6 +337,26 @@ const Index = () => {
   const currentGroup = groups.find(g => g.id === selectedGroup);
   const currentCourt = courts.find(c => c.id === selectedCourt);
 
+  // Helper function to get player initials
+  const getPlayerInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  // Helper function to get player avatar colors
+  const getPlayerAvatarColor = (index: number) => {
+    const colors = [
+      'bg-gradient-to-br from-blue-400 to-blue-600',
+      'bg-gradient-to-br from-green-400 to-green-600',
+      'bg-gradient-to-br from-purple-400 to-purple-600',
+      'bg-gradient-to-br from-pink-400 to-pink-600',
+      'bg-gradient-to-br from-yellow-400 to-yellow-600',
+      'bg-gradient-to-br from-indigo-400 to-indigo-600',
+      'bg-gradient-to-br from-red-400 to-red-600',
+      'bg-gradient-to-br from-teal-400 to-teal-600',
+    ];
+    return colors[index % colors.length];
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 p-4 relative overflow-hidden">
       {/* Floating decorative elements */}
@@ -571,37 +592,48 @@ const Index = () => {
                     <p className="text-gray-400">Add some players to start the fun! 🎉</p>
                   </div>
                 ) : (
-                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                  <div className="space-y-4 max-h-60 overflow-y-auto">
                     {currentGroupPlayers.map((player, index) => (
                       <div
                         key={player.id}
-                        className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-200 shadow-md transform hover:scale-105 border-2 ${
+                        className={`flex items-center justify-between p-4 rounded-3xl transition-all duration-300 shadow-lg transform hover:scale-102 border-2 ${
                           player.isActive 
-                            ? 'bg-white hover:bg-green-50 border-green-200' 
-                            : 'bg-gray-100 hover:bg-gray-150 border-gray-300 opacity-70'
+                            ? 'bg-gradient-to-r from-white to-green-50 hover:from-green-50 hover:to-green-100 border-green-200 shadow-green-100' 
+                            : 'bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-150 hover:to-gray-250 border-gray-300 opacity-70'
                         }`}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
-                            player.isActive 
-                              ? 'bg-gradient-to-r from-green-400 to-teal-400 text-white' 
-                              : 'bg-gray-400 text-gray-600'
-                          }`}>
-                            {index + 1}
-                          </div>
+                        <div className="flex items-center gap-4">
+                          <Avatar className={`w-16 h-16 border-3 ${player.isActive ? 'border-white shadow-xl' : 'border-gray-300'}`}>
+                            <AvatarFallback className={`text-white font-bold text-lg ${
+                              player.isActive 
+                                ? getPlayerAvatarColor(index)
+                                : 'bg-gray-400'
+                            }`}>
+                              {getPlayerInitials(player.name)}
+                            </AvatarFallback>
+                          </Avatar>
                           <div className="flex flex-col">
-                            <span className={`font-bold text-lg ${
+                            <span className={`font-bold text-xl ${
                               player.isActive ? 'text-green-800' : 'text-gray-600'
                             }`}>
                               {player.name}
                             </span>
-                            <span className={`text-xs px-2 py-1 rounded-full w-fit ${
-                              player.isActive 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-gray-200 text-gray-600'
-                            }`}>
-                              {player.isActive ? 'Active ✅' : 'Inactive 😴'}
-                            </span>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+                                player.isActive 
+                                  ? 'bg-green-100 text-green-700' 
+                                  : 'bg-gray-200 text-gray-600'
+                              }`}>
+                                {player.isActive ? 'Active ✅' : 'Inactive 😴'}
+                              </span>
+                              <span className={`text-xs px-2 py-1 rounded-full font-bold ${
+                                player.isActive 
+                                  ? 'bg-gradient-to-r from-green-400 to-teal-400 text-white' 
+                                  : 'bg-gray-400 text-gray-600'
+                              }`}>
+                                #{index + 1}
+                              </span>
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -609,19 +641,19 @@ const Index = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => togglePlayerActive(player.id)}
-                            className={`rounded-full w-10 h-10 p-0 ${
+                            className={`rounded-full w-12 h-12 p-0 shadow-md ${
                               player.isActive 
-                                ? 'text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50' 
-                                : 'text-green-500 hover:text-green-600 hover:bg-green-50'
+                                ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 bg-yellow-100' 
+                                : 'text-green-600 hover:text-green-700 hover:bg-green-50 bg-green-100'
                             }`}
                           >
-                            {player.isActive ? '😴' : '✅'}
+                            <span className="text-xl">{player.isActive ? '😴' : '✅'}</span>
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => removePlayer(player.id)}
-                            className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full w-10 h-10 p-0"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 bg-red-100 rounded-full w-12 h-12 p-0 shadow-md"
                           >
                             <Trash2 className="w-5 h-5" />
                           </Button>
