@@ -577,7 +577,7 @@ const Index = () => {
                       variant="outline"
                       size="sm"
                       onClick={clearAllPlayers}
-                      className="text-white border-white/50 hover:bg-white hover:text-green-600 rounded-2xl shadow-lg"
+                      className="text-white border-white/50 hover:bg-white text-green-600 rounded-2xl shadow-lg"
                     >
                       Clear All ✨
                     </Button>
@@ -618,22 +618,6 @@ const Index = () => {
                             }`}>
                               {player.name}
                             </span>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className={`text-xs px-3 py-1 rounded-full font-medium ${
-                                player.isActive 
-                                  ? 'bg-green-100 text-green-700' 
-                                  : 'bg-gray-200 text-gray-600'
-                              }`}>
-                                {player.isActive ? 'Active ✅' : 'Inactive 😴'}
-                              </span>
-                              <span className={`text-xs px-2 py-1 rounded-full font-bold ${
-                                player.isActive 
-                                  ? 'bg-gradient-to-r from-green-400 to-teal-400 text-white' 
-                                  : 'bg-gray-400 text-gray-600'
-                              }`}>
-                                #{index + 1}
-                              </span>
-                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -678,7 +662,7 @@ const Index = () => {
                   Magic Match Maker ✨
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 space-y-4">
+              <CardContent className="p-2 space-y-4">
                 {currentGroup && currentCourt && (
                   <div className="text-center bg-white/50 p-3 rounded-2xl mb-4">
                     <div className="flex items-center justify-center gap-2 mb-1">
